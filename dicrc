@@ -1,0 +1,19 @@
+; Feature list for jieba-based MeCab dictionary
+; f[0]:  pos (PKU tag: n, v, a, nr, ns, nt, etc.)
+; f[1]:  pinyin pronunciation
+; f[2]:  traditional Chinese character form
+; f[3]:  simplified Chinese character form
+; f[4]:  definition (English, from CC-CEDICT)
+
+cost-factor = 700
+bos-feature = BOS/EOS,*,*,*,*
+eval-size = 1
+unk-eval-size = 1
+config-charset = utf8
+
+output-format-type = jieba
+
+node-format-jieba = %m\t%f[0],%f[1],%f[2],%f[3],%f[4]\n
+unk-format-jieba = %m\t%f[0],%f[1],%f[2],%f[3],%f[4]\n
+bos-format-jieba =
+eos-format-jieba = EOS\n
