@@ -1,0 +1,3 @@
+config:
+  MD060:
+    table_column_style: "leading_and_trailing"
