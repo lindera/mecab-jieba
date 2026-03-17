@@ -8,11 +8,11 @@ on the [UD Chinese GSD][ud-gsd] treebank.
 
 ## Outputs
 
-| File | Description |
-| ---- | ----------- |
-| `jieba.csv` | Base dictionary CSV (584K entries) |
-| `work/export/lex.csv` | CRF-trained dictionary CSV |
-| `work/export/matrix.def` | CRF-trained connection cost matrix |
+| File | How to generate | Description |
+| ---- | --------------- | ----------- |
+| `jieba.csv` | `python3 scripts/build_csv.py` | Base dictionary CSV (584K entries) |
+| `work/export/lex.csv` | `bash scripts/run_experiment.sh baseline` | CRF-trained dictionary CSV |
+| `work/export/matrix.def` | `bash scripts/run_experiment.sh baseline` | CRF-trained connection cost matrix |
 
 ## Requirements
 
@@ -59,7 +59,8 @@ python3 scripts/convert_conllu.py \
 bash scripts/run_experiment.sh baseline
 ```
 
-Produces `work/export/lex.csv` and `work/export/matrix.def`.
+**Output: `work/export/lex.csv` and `work/export/matrix.def`** — these are
+the CRF-trained dictionary files to use with lindera.
 
 ### Training parameters
 
