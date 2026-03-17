@@ -1,0 +1,38 @@
+{
+  "compress_algorithm": "deflate",
+  "default_field_value": "*",
+  "default_left_context_id": 1,
+  "default_right_context_id": 1,
+  "default_word_cost": 1619,
+  "dictionary_schema": {
+    "fields": [
+      "surface",
+      "left_context_id",
+      "right_context_id",
+      "cost",
+      "pos"
+    ]
+  },
+  "encoding": "UTF-8",
+  "flexible_csv": true,
+  "model_info": {
+    "connection_matrix_size": "7x7",
+    "feature_count": 584429,
+    "label_count": 584440,
+    "max_left_context_id": 5,
+    "max_right_context_id": 6,
+    "regularization": 0.02,
+    "training_iterations": 100,
+    "updated_at": 1773737582,
+    "version": "1.0.0"
+  },
+  "name": "jieba",
+  "normalize_details": true,
+  "skip_invalid_cost_or_id": false,
+  "user_dictionary_schema": {
+    "fields": [
+      "surface",
+      "pos"
+    ]
+  }
+}

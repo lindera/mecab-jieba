@@ -5,7 +5,7 @@ Usage:
     python scripts/evaluate.py \\
         --test-file .tmp/ud-chinese/UD_Chinese-GSD/zh_gsd-ud-test.conllu \\
         --dict-dir work/dict \\
-        --jieba-dict dict.txt.big
+        --jieba-dict work/dict.txt.big
 
 The script parses the UD Chinese CoNLL-U test file to obtain gold-standard
 segmentation and POS tags, runs lindera tokenize on each sentence's raw text,

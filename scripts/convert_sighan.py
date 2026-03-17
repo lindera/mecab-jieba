@@ -5,7 +5,7 @@ Usage:
     python scripts/convert_sighan.py \
         --input .tmp/sighan2005/icwb2-data/training/pku_training.utf8 \
         --output work/train/corpus_pku.txt \
-        --jieba-dict dict.txt.big
+        --jieba-dict work/dict.txt.big
 
 SIGHAN format: one sentence per line, words separated by double spaces.
 Output format: surface\\tpos,chartype,*,*,*,*  (one token per line, EOS between sentences)
