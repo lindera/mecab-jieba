@@ -1,3 +1,4 @@
+VERSION := $(shell cat VERSION)-$(shell date +%Y%m%d)
 EXPERIMENT ?= baseline
 LAMBDA ?= 0.01
 MAX_ITER ?= 100
@@ -25,5 +26,5 @@ train: ## Train CRF model and generate dict-src (output: work/experiments/$(EXPE
 	LAMBDA=$(LAMBDA) MAX_ITER=$(MAX_ITER) REGULARIZATION=$(REGULARIZATION) ELASTIC_NET_L1_RATIO=$(ELASTIC_NET_L1_RATIO) bash scripts/run_experiment.sh $(EXPERIMENT)
 
 tag: ## Make a new tag for the current version
-	git tag v$(LAURUS_VERSION)
-	git push origin v$(LAURUS_VERSION)
+	git tag $(VERSION)
+	git push origin $(VERSION)
