@@ -8,11 +8,25 @@ on the [UD Chinese GSD][ud-gsd] treebank.
 
 ## Outputs
 
+### Base dictionary
+
 | File | How to generate | Description |
 | ---- | --------------- | ----------- |
 | `jieba.csv` | `python3 scripts/build_csv.py` | Base dictionary CSV (584K entries) |
-| `work/export/lex.csv` | `bash scripts/run_experiment.sh baseline` | CRF-trained dictionary CSV |
-| `work/export/matrix.def` | `bash scripts/run_experiment.sh baseline` | CRF-trained connection cost matrix |
+
+### CRF-trained dictionary source (input for `lindera build`)
+
+Run `bash scripts/run_experiment.sh baseline` to produce the following files
+under `work/export/`:
+
+| File | Description |
+| ---- | ----------- |
+| `work/export/lex.csv` | Lexicon entries with CRF-trained costs |
+| `work/export/matrix.def` | Part-of-speech connection cost matrix |
+| `work/export/char.def` | Character category definitions |
+| `work/export/metadata.json` | Dictionary metadata |
+
+These files are the source for `lindera build` in a separate repository.
 
 ## Requirements
 
