@@ -122,24 +122,44 @@ python3 scripts/build_seed.py
 
 ### Step 2: Train and Build
 
-Run the full pipeline (train CRF model, export, build compiled dictionary):
+Run the full pipeline with the best known configuration
+(L2 regularization, λ=0.01, all feature templates):
 
 ```bash
 bash scripts/run_experiment.sh baseline
 ```
 
-The script executes four steps:
+This script runs four steps automatically:
 
-1. **Train** - CRF model training with lindera
-2. **Export** - Export model to dictionary files (lex.csv, matrix.def, etc.)
-3. **Build** - Compile dictionary to lindera binary format
-4. **Evaluate** - Measure F1 score on UD Chinese GSD test set
+1. **Train** — CRF model training (`work/train/model.dat`)
+2. **Export** — Export to dictionary files (`work/export/`)
+3. **Build** — Compile lindera binary dictionary (`work/dict/`)
+4. **Evaluate** — F1 score on UD Chinese GSD test set
+
+Expected output:
+
+```text
+Precision      : 0.7822
+Recall         : 0.7644
+F1             : 0.7732
+```
+
+The compiled dictionary is written to `work/dict/`.
 
 ### Step 3: Tokenize
 
 ```bash
 lindera tokenize -d work/dict "武汉市解除离汉离鄂通道管控措施"
 ```
+
+### Output Artifacts
+
+| Path | Description |
+| ---- | ----------- |
+| `work/train/model.dat` | Trained CRF model (binary) |
+| `work/export/lex.csv` | Exported lexicon with learned costs |
+| `work/export/matrix.def` | Learned POS transition cost matrix |
+| `work/dict/` | Compiled lindera dictionary (use with `lindera tokenize -d`) |
 
 ### Training Parameters
 
@@ -153,35 +173,48 @@ Parameters are configured via environment variables:
 | `UNK_DEF` | `work/train/unk.def` | Unknown word definitions |
 | `LAMBDA` | `0.01` | Regularization coefficient |
 | `MAX_ITER` | `100` | Maximum training iterations |
-| `REGULARIZATION` | `l1` | Regularization type: `l1`, `l2`, or `elasticnet` |
+| `REGULARIZATION` | `l2` | Regularization type: `l1`, `l2`, or `elasticnet` |
 | `ELASTIC_NET_L1_RATIO` | `0.5` | L1 ratio for Elastic Net (0.0-1.0) |
 
 Example with custom parameters:
 
 ```bash
-REGULARIZATION=elasticnet ELASTIC_NET_L1_RATIO=0.8 LAMBDA=0.01 \
-  bash scripts/run_experiment.sh my_experiment
+LAMBDA=0.005 MAX_ITER=200 bash scripts/run_experiment.sh my_experiment
 ```
 
 ### Feature Templates
 
-Feature templates are defined in `work/train/feature.def`:
+Feature templates are defined in `work/train/feature.def`.
+The default configuration uses all available features:
 
 ```text
-UNIGRAM:%F[0]              # POS tag unigram
-UNIGRAM U01:%t             # Character type unigram (optional)
-BIGRAM B00:%L[0]/%R[0]     # POS-to-POS transition bigram
+UNIGRAM:%F[0]          # POS tag (PKU tagset)
+UNIGRAM U01:%t         # Character type (char.def category)
+UNIGRAM U06:%F[6]      # Character count (1, 2, 3, 4+)
+UNIGRAM U07:%F[7]      # First character of surface form
+UNIGRAM U08:%F[8]      # Last character of surface form
+UNIGRAM U09:%F[9]      # Frequency band (high/mid/low/rare)
+BIGRAM B00:%L[0]/%R[0] # POS-to-POS transition
 ```
 
-| Template | Description | Notes |
-| -------- | ----------- | ----- |
-| `%F[0]` | POS tag (PKU tagset) | Always used |
-| `%t` | Character type category | Requires Elastic Net regularization |
-| `%L[0]/%R[0]` | Left/right POS transition | Core bigram feature |
+Feature field index reference for `seed.csv` and `corpus.txt`:
 
-> **Note:** Adding `%t` with L1 regularization causes all bigram
-> weights to be pruned. Use `REGULARIZATION=elasticnet` with
-> `ELASTIC_NET_L1_RATIO=0.8` when using `%t` features.
+| Index | Field | Values | Source |
+| ----- | ----- | ------ | ------ |
+| `F[0]` | POS tag | n, v, a, d, ... | seed + corpus |
+| `F[1]` | Character type | CHINESE, ALPHA, NUMERIC, ... | seed + corpus |
+| `F[2]` | Pinyin | wu3han4, ... | seed only |
+| `F[3]` | Traditional form | 武漢, ... | seed only |
+| `F[4]` | Simplified form | 武汉, ... | seed only |
+| `F[5]` | Definition | Wuhan, ... | seed only |
+| `F[6]` | Character count | 1, 2, 3, 4+ | seed + corpus |
+| `F[7]` | First character | 武, 不, 中, ... | seed + corpus |
+| `F[8]` | Last character | 市, 的, 了, ... | seed + corpus |
+| `F[9]` | Frequency band | high, mid, low, rare | seed only |
+
+> **Note:** L1 regularization prunes all bigram weights to zero when
+> multiple unigram features are active. Use `REGULARIZATION=l2`
+> (the default) or `elasticnet`.
 
 ### Evaluation
 
@@ -200,10 +233,17 @@ Metrics: span-based micro-averaged Precision, Recall, and F1.
 
 Evaluated on UD Chinese GSD test set (481 sentences):
 
-| Configuration | P | R | F1 |
-| ------------- | - | - | -- |
-| L1, %F[0]+B00 (baseline) | 0.7188 | 0.7355 | 0.7271 |
-| Elastic Net (r=0.8), %F[0]+%t+B00 | 0.7255 | 0.7320 | 0.7287 |
+| Configuration | Regularization | P | R | F1 |
+| ------------- | -------------- | - | - | -- |
+| `%F[0]` + B00 | L2, λ=0.01 | 0.7803 | 0.7464 | 0.7630 |
+| **`%F[0]` + `%t` + `%F[6-9]` + B00** | **L2, λ=0.01** | **0.7822** | **0.7644** | **0.7732** |
+
+The default `work/train/feature.def` and `REGULARIZATION=l2` reproduce
+the best result. Run:
+
+```bash
+bash scripts/run_experiment.sh baseline
+```
 
 ## MeCab CSV Format
 

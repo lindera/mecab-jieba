@@ -17,11 +17,11 @@
 #   CORPUS               - path to corpus.txt (default: work/train/corpus.txt)
 #   LAMBDA               - regularization coefficient (default: 0.01)
 #   MAX_ITER             - max training iterations (default: 100)
-#   REGULARIZATION       - l1, l2, or elasticnet (default: l1)
+#   REGULARIZATION       - l1, l2, or elasticnet (default: l2)
 #   ELASTIC_NET_L1_RATIO - L1 ratio for elastic net (default: 0.5, range: 0.0-1.0)
 #
 # Examples:
-#   # Default L1 training
+#   # Best known configuration (L2, F1=0.7732 on UD Chinese GSD)
 #   bash scripts/run_experiment.sh baseline
 #
 #   # Elastic Net with custom L1 ratio
@@ -49,7 +49,7 @@ UNK_DEF="${UNK_DEF:-${TRAIN}/unk.def}"
 CORPUS="${CORPUS:-${TRAIN}/corpus.txt}"
 LAMBDA="${LAMBDA:-0.01}"
 MAX_ITER="${MAX_ITER:-100}"
-REGULARIZATION="${REGULARIZATION:-l1}"
+REGULARIZATION="${REGULARIZATION:-l2}"
 ELASTIC_NET_L1_RATIO="${ELASTIC_NET_L1_RATIO:-0.5}"
 
 # Fixed paths

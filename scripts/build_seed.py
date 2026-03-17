@@ -8,9 +8,13 @@ Reads jieba.csv and produces a seed dictionary with cost=0 (left_id=0,
 right_id=0).  The CRF training step will learn proper costs and connection
 IDs; this script merely prepares the surface/feature inventory.
 
-Output format (same columns as jieba.csv, but cost forced to 0):
+Output format:
 
-    surface,0,0,0,pos,pinyin,traditional,simplified,definition
+    surface,0,0,0,pos,chartype,pinyin,trad,simp,def,char_count,first_char,last_char,freq_band
+
+Feature field indices:
+    F[0]=pos, F[1]=chartype, F[2]=pinyin, F[3]=traditional, F[4]=simplified,
+    F[5]=definition, F[6]=char_count, F[7]=first_char, F[8]=last_char, F[9]=freq_band
 """
 
 import argparse
@@ -55,6 +59,29 @@ def escape_csv_field(value: str) -> str:
     return value
 
 
+def get_char_count_label(surface: str) -> str:
+    """Return character count label: '1', '2', '3', or '4+' for 4 or more."""
+    n = len(surface)
+    if n >= 4:
+        return "4+"
+    return str(n)
+
+
+def get_freq_band(cost: int) -> str:
+    """Return frequency band based on cost value.
+
+    Lower cost = higher frequency (cost = -log10(freq/total) * 100).
+    Boundaries based on quartiles of jieba.csv cost distribution.
+    """
+    if cost <= 500:
+        return "high"
+    if cost <= 679:
+        return "mid"
+    if cost <= 746:
+        return "low"
+    return "rare"
+
+
 def build_seed(input_path: str, output_path: str) -> None:
     """Read *input_path* (jieba.csv) and write seed.csv to *output_path*."""
     pos_counter: Counter[str] = Counter()
@@ -75,11 +102,20 @@ def build_seed(input_path: str, output_path: str) -> None:
                 continue
 
             surface = row[0]
-            # row[1] = left_id, row[2] = right_id, row[3] = cost (all ignored)
+            # row[1] = left_id, row[2] = right_id, row[3] = cost
+            cost = int(row[3])
             pos = row[4]
             char_type = get_char_type(surface)
+
+            # New feature fields
+            char_count = get_char_count_label(surface)
+            first_char = surface[0] if surface else "*"
+            last_char = surface[-1] if surface else "*"
+            freq_band = get_freq_band(cost)
+
             # Insert char_type as second feature field: pos, chartype, pinyin, ...
-            features = [pos, char_type] + row[5:]
+            # Then append new fields at the end
+            features = [pos, char_type] + row[5:] + [char_count, first_char, last_char, freq_band]
 
             pos_counter[pos] += 1
             total += 1

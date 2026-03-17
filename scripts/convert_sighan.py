@@ -144,6 +144,14 @@ def parse_sighan(
 # Writer
 # ---------------------------------------------------------------------------
 
+def get_char_count_label(surface: str) -> str:
+    """Return character count label: '1', '2', '3', or '4+' for 4 or more."""
+    n = len(surface)
+    if n >= 4:
+        return "4+"
+    return str(n)
+
+
 def write_corpus(
     sentences: list[list[tuple[str, str, str]]], output: str
 ) -> None:
@@ -152,8 +160,12 @@ def write_corpus(
     with open(output, "w", encoding="utf-8") as f:
         for sent in sentences:
             for surface, pos, char_type in sent:
-                # pos,chartype,*,*,*,*  (6 feature columns, matching seed.csv)
-                f.write(f"{surface}\t{pos},{char_type},*,*,*,*\n")
+                char_count = get_char_count_label(surface)
+                first_char = surface[0] if surface else "*"
+                last_char = surface[-1] if surface else "*"
+                # F[0]=pos, F[1]=chartype, F[2..5]=*, F[6]=char_count,
+                # F[7]=first_char, F[8]=last_char, F[9]=freq_band(*)
+                f.write(f"{surface}\t{pos},{char_type},*,*,*,*,{char_count},{first_char},{last_char},*\n")
             f.write("EOS\n")
 
 
