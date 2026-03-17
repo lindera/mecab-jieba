@@ -12,14 +12,14 @@
 
 ### CRF 学習済み辞書ソース（`lindera build` への入力）
 
-`bash scripts/run_experiment.sh <experiment_name>` を実行すると、`work/experiments/<experiment_name>/dict-src/` 以下に次のファイルが生成されます。
+`bash scripts/run_experiment.sh <experiment_name>` を実行すると、`work/experiments/<experiment_name>/export/` 以下に次のファイルが生成されます。
 
 | ファイル | 説明 |
 | -------- | ---- |
-| `dict-src/lex.csv` | CRF 学習済みコスト付き語彙エントリ |
-| `dict-src/matrix.def` | 品詞間接続コスト行列 |
-| `dict-src/char.def` | 文字種定義 |
-| `dict-src/metadata.json` | 辞書メタデータ |
+| `export/lex.csv` | CRF 学習済みコスト付き語彙エントリ |
+| `export/matrix.def` | 品詞間接続コスト行列 |
+| `export/char.def` | 文字種定義 |
+| `export/metadata.json` | 辞書メタデータ |
 
 これらのファイルが、別リポジトリで `lindera build` に渡すソースです。
 
@@ -67,13 +67,20 @@ python3 scripts/convert_conllu.py \
   --split train
 ```
 
-### Step 2: 学習と辞書ソース生成
+### Step 2: 学習・辞書ソース生成・ビルド・評価
 
 ```bash
 bash scripts/run_experiment.sh baseline
 ```
 
-**出力: `work/experiments/baseline/dict-src/`** — lindera で使用する CRF 学習済み辞書ソースファイル（`lex.csv`、`matrix.def` 等）が格納されます。
+以下の 4 ステップを一括実行します:
+
+1. **Train** — CRF モデルを学習
+2. **Export** — 辞書ソースファイルを生成 → `work/experiments/baseline/export/`
+3. **Build** — コンパイル済み辞書を生成 → `work/experiments/baseline/dict/`
+4. **Evaluate** — UD Chinese GSD テストセットで F1 評価 → `work/experiments/baseline/result.txt`
+
+`export/` ディレクトリ内の辞書ソースファイル（`lex.csv`、`matrix.def` 等）が、別リポジトリで `lindera build` に渡す入力です。
 
 ### 学習パラメータ
 
@@ -188,7 +195,7 @@ mecab-jieba/
 ├── matrix.def             # 接続コスト行列（1x1 ダミー、静的利用向け）
 ├── unk.def                # 未知語定義
 ├── dicrc                  # MeCab 辞書設定
-├── dict-src/              # CRF 学習済み辞書ソース（lindera build への入力）
+├── dict-src/              # CRF 学習済み辞書ソース（export/ からコピー、lindera build への入力）
 ├── scripts/
 │   ├── build_jieba_csv.py # jieba + CC-CEDICT ダウンロード → jieba.csv 生成
 │   ├── build_seed.py      # CRF 学習用 seed.csv 生成
@@ -200,7 +207,7 @@ mecab-jieba/
     ├── train/             # seed.csv, corpus.txt, model.dat, feature.def, ...
     └── experiments/       # 実験ごとの結果
         └── <name>/
-            ├── dict-src/  # lex.csv, matrix.def, char.def, metadata.json
+            ├── export/    # lex.csv, matrix.def, char.def, metadata.json
             ├── dict/      # コンパイル済み lindera 辞書
             └── result.txt # 評価結果
 ```

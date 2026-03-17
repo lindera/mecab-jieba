@@ -17,14 +17,14 @@ on the [UD Chinese GSD][ud-gsd] treebank.
 ### CRF-trained dictionary source (input for `lindera build`)
 
 Run `bash scripts/run_experiment.sh <experiment_name>` to produce the
-following files under `work/experiments/<experiment_name>/dict-src/`:
+following files under `work/experiments/<experiment_name>/export/`:
 
 | File | Description |
 | ---- | ----------- |
-| `dict-src/lex.csv` | Lexicon entries with CRF-trained costs |
-| `dict-src/matrix.def` | Part-of-speech connection cost matrix |
-| `dict-src/char.def` | Character category definitions |
-| `dict-src/metadata.json` | Dictionary metadata |
+| `export/lex.csv` | Lexicon entries with CRF-trained costs |
+| `export/matrix.def` | Part-of-speech connection cost matrix |
+| `export/char.def` | Character category definitions |
+| `export/metadata.json` | Dictionary metadata |
 
 These files are the source for `lindera build` in a separate repository.
 
@@ -75,14 +75,20 @@ python3 scripts/convert_conllu.py \
   --split train
 ```
 
-### Step 2: Train and build dictionary source
+### Step 2: Train, export, build, and evaluate
 
 ```bash
 bash scripts/run_experiment.sh baseline
 ```
 
-**Output: `work/experiments/baseline/dict-src/`** — contains the CRF-trained
-dictionary source files (`lex.csv`, `matrix.def`, etc.) to use with lindera.
+Runs the full pipeline in four steps:
+
+1. **Train** — Learn CRF model from corpus
+2. **Export** — Generate dictionary source files → `work/experiments/baseline/export/`
+3. **Build** — Compile dictionary → `work/experiments/baseline/dict/`
+4. **Evaluate** — Score on UD Chinese GSD test set → `work/experiments/baseline/result.txt`
+
+The dictionary source files in `export/` (`lex.csv`, `matrix.def`, etc.) are the input for `lindera build` in a separate repository.
 
 ### Training parameters
 
@@ -199,19 +205,19 @@ mecab-jieba/
 ├── matrix.def             # Connection cost matrix (1x1 dummy, static use only)
 ├── unk.def                # Unknown word definitions
 ├── dicrc                  # MeCab dictionary configuration
-├── dict-src/              # CRF-trained dictionary source (input for lindera build)
+├── dict-src/              # CRF-trained dictionary source (copied from export/, input for lindera build)
 ├── scripts/
 │   ├── build_jieba_csv.py # Download jieba + CC-CEDICT, generate jieba.csv
 │   ├── build_seed.py      # Generate seed.csv for CRF training
 │   ├── convert_conllu.py  # Convert UD CoNLL-U to training corpus
 │   ├── convert_sighan.py  # Convert SIGHAN bakeoff corpus (optional)
 │   ├── evaluate.py        # Evaluate segmentation F1 on UD GSD test
-│   └── run_experiment.sh  # Full train/dict-src/build/evaluate pipeline
+│   └── run_experiment.sh  # Full train/export/build/evaluate pipeline
 └── work/                  # Generated artifacts (not committed)
     ├── train/             # seed.csv, corpus.txt, model.dat, feature.def, ...
     └── experiments/       # Per-experiment results
         └── <name>/
-            ├── dict-src/  # lex.csv, matrix.def, char.def, metadata.json
+            ├── export/    # lex.csv, matrix.def, char.def, metadata.json
             ├── dict/      # Compiled lindera dictionary
             └── result.txt # Evaluation results
 ```
