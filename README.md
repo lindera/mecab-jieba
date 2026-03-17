@@ -1,191 +1,89 @@
 # mecab-jieba
 
-A MeCab dictionary for Chinese (Mandarin) text segmentation
-based on [jieba][jieba]'s word frequency dictionary,
-enriched with [CC-CEDICT][cedict] data
-(pinyin, traditional/simplified forms, English definitions).
+A Chinese (Mandarin) dictionary in MeCab/[lindera][lindera] CSV format,
+built from [jieba][jieba]'s word frequency dictionary and enriched with
+[CC-CEDICT][cedict] data (pinyin, traditional/simplified forms, English
+definitions). Optionally, connection costs can be improved via CRF training
+on the [UD Chinese GSD][ud-gsd] treebank.
 
-Supports both static dictionary usage (MeCab/lindera)
-and CRF-based training with [lindera][lindera] for
-learned connection costs and POS transitions.
+## Outputs
+
+| File | Description |
+| ---- | ----------- |
+| `jieba.csv` | Base dictionary CSV (584K entries) |
+| `work/export/lex.csv` | CRF-trained dictionary CSV |
+| `work/export/matrix.def` | CRF-trained connection cost matrix |
 
 ## Requirements
 
 - Python 3.10+
-- [lindera][lindera] 2.3.1+ (for CRF training and tokenization)
-- [UD Chinese GSD][ud-gsd] (for training corpus and evaluation)
+- [lindera][lindera] 2.3.2+ with `train` feature (for CRF training only):
+  `cargo install --path lindera-cli --features train`
 
-## Repository Structure
-
-```text
-mecab-jieba/
-├── README.md
-├── LICENSE
-├── jieba.csv              # MeCab dictionary CSV (pre-built)
-├── char.def               # Character category mapping
-├── matrix.def             # Connection cost matrix (1x1 dummy)
-├── unk.def                # Unknown word definitions
-├── dicrc                  # MeCab dictionary configuration
-├── dict.txt.big           # jieba frequency dictionary (downloaded)
-├── scripts/
-│   ├── build_csv.py       # Download jieba + CC-CEDICT, generate jieba.csv
-│   ├── build_seed.py      # Generate seed.csv for CRF training
-│   ├── convert_conllu.py  # Convert UD CoNLL-U to training corpus
-│   ├── convert_sighan.py  # Convert SIGHAN bakeoff corpus (optional)
-│   ├── evaluate.py        # Evaluate segmentation F1 on UD GSD test
-│   └── run_experiment.sh  # Full train/export/build/evaluate pipeline
-└── work/
-    ├── train/             # Training data and CRF model
-    ├── export/            # Exported dictionary (intermediate)
-    ├── build/             # Compiled lindera dictionary
-    └── experiments/       # Experiment results and configs
-```
-
-## Build (Static Dictionary)
-
-### 1. Generate jieba.csv
-
-Run the build script to download jieba's `dict.txt.big`
-and CC-CEDICT, then merge and convert to MeCab CSV format:
+## Building jieba.csv
 
 ```bash
 python3 scripts/build_csv.py
 ```
 
-This will:
+Downloads `dict.txt.big` from jieba and CC-CEDICT from MDBG, then merges
+them into `jieba.csv` (584K entries, ~25MB).
 
-1. Download `dict.txt.big` from the jieba repository
-2. Download `cedict_1_0_ts_utf-8_mdbg.txt.gz` from MDBG
-3. Merge CC-CEDICT data into jieba entries
-4. Write `jieba.csv`
+## CRF Training (Optional)
 
-Options:
+CRF training learns better connection costs from a segmentation corpus,
+replacing the frequency-based costs in `jieba.csv`.
 
-```bash
-# Use local files instead of downloading
-python3 scripts/build_csv.py \
-  --jieba-file /path/to/dict.txt \
-  --cedict-file /path/to/cedict_ts.u8
-
-# Specify output file name
-python3 scripts/build_csv.py --output my_dict.csv
-```
-
-### 2. Build MeCab dictionary
-
-Compile the dictionary using `mecab-dict-index`:
+### Step 1: Prepare training data
 
 ```bash
-mecab-dict-index -f utf-8 -t utf-8
-```
-
-### 3. Test with MeCab
-
-```bash
-echo "武汉市解除离汉离鄂通道管控措施" | mecab -d .
-```
-
-## CRF Training (lindera)
-
-CRF training learns connection costs (POS transition weights)
-from annotated corpora, improving segmentation accuracy over
-the static frequency-based dictionary.
-
-### Prerequisites
-
-Install lindera with training support:
-
-```bash
-cargo install --path /path/to/lindera/lindera-cli --features train
-```
-
-### Step 1: Prepare Training Data
-
-Download UD Chinese GSD and convert to training corpus format:
-
-```bash
-# Clone UD Chinese GSD
+# Download UD Chinese GSD
 mkdir -p .tmp/ud-chinese
 git clone https://github.com/UniversalDependencies/UD_Chinese-GSD.git \
   .tmp/ud-chinese/UD_Chinese-GSD
 
-# Convert to lindera corpus format
+# Generate seed dictionary: jieba.csv → work/train/seed.csv
+python3 scripts/build_seed.py
+
+# Convert UD GSD training split to lindera corpus format
 python3 scripts/convert_conllu.py \
-  --input .tmp/ud-chinese/UD_Chinese-GSD/zh_gsd-ud-train.conllu \
+  --input .tmp/ud-chinese/UD_Chinese-GSD/ \
   --output work/train/corpus.txt \
   --jieba-dict dict.txt.big \
   --split train
-
-# Generate seed dictionary from jieba.csv
-python3 scripts/build_seed.py
 ```
 
-### Step 2: Train and Build
-
-Run the full pipeline with the best known configuration
-(L2 regularization, λ=0.01, all feature templates):
+### Step 2: Train and export
 
 ```bash
 bash scripts/run_experiment.sh baseline
 ```
 
-This script runs four steps automatically:
+Produces `work/export/lex.csv` and `work/export/matrix.def`.
 
-1. **Train** — CRF model training (`work/train/model.dat`)
-2. **Export** — Export to dictionary files (`work/export/`)
-3. **Build** — Compile lindera binary dictionary (`work/dict/`)
-4. **Evaluate** — F1 score on UD Chinese GSD test set
-
-Expected output:
-
-```text
-Precision      : 0.7822
-Recall         : 0.7644
-F1             : 0.7732
-```
-
-The compiled dictionary is written to `work/dict/`.
-
-### Step 3: Tokenize
-
-```bash
-lindera tokenize -d work/dict "武汉市解除离汉离鄂通道管控措施"
-```
-
-### Output Artifacts
-
-| Path | Description |
-| ---- | ----------- |
-| `work/train/model.dat` | Trained CRF model (binary) |
-| `work/export/lex.csv` | Exported lexicon with learned costs |
-| `work/export/matrix.def` | Learned POS transition cost matrix |
-| `work/dict/` | Compiled lindera dictionary (use with `lindera tokenize -d`) |
-
-### Training Parameters
-
-Parameters are configured via environment variables:
+### Training parameters
 
 | Variable | Default | Description |
 | -------- | ------- | ----------- |
 | `CORPUS` | `work/train/corpus.txt` | Training corpus path |
-| `FEATURE_DEF` | `work/train/feature.def` | Feature template definitions |
+| `FEATURE_DEF` | `work/train/feature.def` | Feature template file |
 | `CHAR_DEF` | `work/train/char.def` | Character category definitions |
 | `UNK_DEF` | `work/train/unk.def` | Unknown word definitions |
 | `LAMBDA` | `0.01` | Regularization coefficient |
 | `MAX_ITER` | `100` | Maximum training iterations |
-| `REGULARIZATION` | `l2` | Regularization type: `l1`, `l2`, or `elasticnet` |
-| `ELASTIC_NET_L1_RATIO` | `0.5` | L1 ratio for Elastic Net (0.0-1.0) |
+| `REGULARIZATION` | `l2` | `l1`, `l2`, or `elasticnet` |
+| `ELASTIC_NET_L1_RATIO` | `0.5` | L1 ratio for Elastic Net (0.0–1.0) |
 
-Example with custom parameters:
+Example:
 
 ```bash
 LAMBDA=0.005 MAX_ITER=200 bash scripts/run_experiment.sh my_experiment
 ```
 
-### Feature Templates
+### Feature templates
 
 Feature templates are defined in `work/train/feature.def`.
-The default configuration uses all available features:
+The default (best known) configuration:
 
 ```text
 UNIGRAM:%F[0]          # POS tag (PKU tagset)
@@ -197,10 +95,10 @@ UNIGRAM U09:%F[9]      # Frequency band (high/mid/low/rare)
 BIGRAM B00:%L[0]/%R[0] # POS-to-POS transition
 ```
 
-Feature field index reference for `seed.csv` and `corpus.txt`:
+Feature field index reference:
 
-| Index | Field | Values | Source |
-| ----- | ----- | ------ | ------ |
+| Index | Field | Values | Available in |
+| ----- | ----- | ------ | ------------ |
 | `F[0]` | POS tag | n, v, a, d, ... | seed + corpus |
 | `F[1]` | Character type | CHINESE, ALPHA, NUMERIC, ... | seed + corpus |
 | `F[2]` | Pinyin | wu3han4, ... | seed only |
@@ -216,20 +114,7 @@ Feature field index reference for `seed.csv` and `corpus.txt`:
 > multiple unigram features are active. Use `REGULARIZATION=l2`
 > (the default) or `elasticnet`.
 
-### Evaluation
-
-Evaluate a trained dictionary against UD Chinese GSD test set:
-
-```bash
-python3 scripts/evaluate.py \
-  --test-file .tmp/ud-chinese/UD_Chinese-GSD/zh_gsd-ud-test.conllu \
-  --dict-dir work/dict \
-  --jieba-dict dict.txt.big
-```
-
-Metrics: span-based micro-averaged Precision, Recall, and F1.
-
-### Best Known Results
+### Best known results
 
 Evaluated on UD Chinese GSD test set (481 sentences):
 
@@ -239,15 +124,11 @@ Evaluated on UD Chinese GSD test set (481 sentences):
 | **`%F[0]` + `%t` + `%F[6-9]` + B00** | **L2, λ=0.01** | **0.7822** | **0.7644** | **0.7732** |
 
 The default `work/train/feature.def` and `REGULARIZATION=l2` reproduce
-the best result. Run:
-
-```bash
-bash scripts/run_experiment.sh baseline
-```
+the best result.
 
 ## MeCab CSV Format
 
-Each entry in `jieba.csv` follows this format:
+Each entry in `jieba.csv`:
 
 ```text
 surface,0,0,cost,pos,pinyin,traditional,simplified,definition
@@ -256,37 +137,25 @@ surface,0,0,cost,pos,pinyin,traditional,simplified,definition
 | Field | Description |
 | ----- | ----------- |
 | surface | Word surface form |
-| left_id | Left context ID (0 for 1x1) |
-| right_id | Right context ID (0 for 1x1) |
-| cost | -log10(freq / total) * 100 |
+| left_id | Left context ID (0 for 1×1 matrix) |
+| right_id | Right context ID (0 for 1×1 matrix) |
+| cost | `-log10(freq / total) * 100` |
 | pos | Part-of-speech tag (PKU tagset) |
-| pinyin | Pinyin (CC-CEDICT, * if N/A) |
-| traditional | Traditional form (CC-CEDICT) |
-| simplified | Simplified form (CC-CEDICT) |
-| definition | English definition (CC-CEDICT) |
+| pinyin | Pinyin (CC-CEDICT; `*` if unavailable) |
+| traditional | Traditional form (`*` if unavailable) |
+| simplified | Simplified form (`*` if unavailable) |
+| definition | English definition (`*` if unavailable) |
 
-CC-CEDICT coverage: approximately 22% of jieba entries
-have CC-CEDICT data. Unmatched entries use `*` for
-pinyin, traditional, simplified, and definition fields.
+CC-CEDICT coverage: approximately 22% of jieba entries have CC-CEDICT data.
 
-### Cost Estimation
+### Using jieba.csv with MeCab directly
 
-Word cost is derived from jieba's frequency data:
-
-```text
-cost = int(-log10(freq / total_freq) * 100)
+```bash
+mecab-dict-index -f utf-8 -t utf-8
+echo "武汉市解除离汉离鄂通道管控措施" | mecab -d .
 ```
 
-High-frequency words get lower costs, making them
-preferred by MeCab's Viterbi algorithm:
-
-| Word | Frequency | Cost |
-| ---- | --------- | ---- |
-| 是 | 51,365,674 | 203 |
-| 的 | 49,577,040 | 243 |
-| 中国 | 45,459,016 | 282 |
-
-### PKU Part-of-Speech Tagset
+## PKU Part-of-Speech Tagset
 
 | Tag | Description | Tag | Description |
 | --- | ----------- | --- | ----------- |
@@ -298,23 +167,45 @@ preferred by MeCab's Viterbi algorithm:
 | `q` | Measure word | `p` | Preposition |
 | `c` | Conjunction | `u` | Auxiliary |
 
+## Repository Structure
+
+```text
+mecab-jieba/
+├── jieba.csv              # MeCab/lindera dictionary CSV (generated by build_csv.py)
+├── char.def               # Character category mapping
+├── matrix.def             # Connection cost matrix (1x1 dummy, static use only)
+├── unk.def                # Unknown word definitions
+├── dicrc                  # MeCab dictionary configuration
+├── scripts/
+│   ├── build_csv.py       # Download jieba + CC-CEDICT, generate jieba.csv
+│   ├── build_seed.py      # Generate seed.csv for CRF training
+│   ├── convert_conllu.py  # Convert UD CoNLL-U to training corpus
+│   ├── convert_sighan.py  # Convert SIGHAN bakeoff corpus (optional)
+│   ├── evaluate.py        # Evaluate segmentation F1 on UD GSD test
+│   └── run_experiment.sh  # Full train/export/evaluate pipeline
+└── work/                  # Generated artifacts (not committed)
+    ├── train/             # seed.csv, corpus.txt, model.dat, feature.def, ...
+    ├── export/            # lex.csv, matrix.def (output)
+    └── experiments/       # Per-experiment configs and results
+```
+
 ## License
 
-The build script and dictionary definition files in this
-repository are licensed under the [MIT License](LICENSE).
+The build scripts and dictionary definition files in this repository are
+licensed under the [MIT License](LICENSE).
 
-Note: `jieba.csv` is pre-built and committed to this
-repository. The source files (`dict.txt.big` and CC-CEDICT)
-are downloaded at build time and are not included.
+`jieba.csv` is pre-built and committed to this repository. The source files
+(`dict.txt.big` and CC-CEDICT) are downloaded at build time and are not
+included.
 
 ## Acknowledgments
 
-- [jieba][jieba] - Chinese text segmentation
-- [CC-CEDICT][cedict] - Chinese-English dictionary data
-- [CC-CEDICT-MeCab][cedict-mecab] - Reference for structure
-- [MeCab][mecab] - Morphological analyzer
-- [lindera][lindera] - Morphological analyzer with CRF training
-- [UD Chinese GSD][ud-gsd] - Training and evaluation corpus
+- [jieba][jieba] — Chinese text segmentation
+- [CC-CEDICT][cedict] — Chinese-English dictionary data
+- [CC-CEDICT-MeCab][cedict-mecab] — Reference for structure
+- [MeCab][mecab] — Morphological analyzer
+- [lindera][lindera] — Morphological analyzer with CRF training
+- [UD Chinese GSD][ud-gsd] — Training and evaluation corpus
 
 [jieba]: https://github.com/fxsjy/jieba
 [cedict]: https://cc-cedict.org/
