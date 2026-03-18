@@ -49,8 +49,8 @@ jobs:
 
       - name: Upload to Cloudflare R2
         run: |
-          aws s3 cp "$TARBALL" "s3://lindera/$TARBALL"
-          aws s3 cp "${TARBALL}.md5" "s3://lindera/${TARBALL}.md5"
+          aws s3 cp "$TARBALL" "s3://lindera/$TARBALL" --content-type "application/gzip"
+          aws s3 cp "${TARBALL}.md5" "s3://lindera/${TARBALL}.md5" --content-type "text/plain"
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
