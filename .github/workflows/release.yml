@@ -1,0 +1,57 @@
+name: Release
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "*.*.*"
+
+jobs:
+  create-release:
+    name: Create Release
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Release ${{ github.ref_name }}
+          tag_name: ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          make_latest: true
+
+  publish-dictionary:
+    name: Publish dictionary
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: [create-release]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Run checkout
+        uses: actions/checkout@v6
+
+      - name: Download source tarball
+        run: |
+          VERSION="${GITHUB_REF_NAME}"
+          TARBALL="${GITHUB_REPOSITORY#*/}-${VERSION}.tar.gz"
+          gh release download "$GITHUB_REF_NAME" --archive=tar.gz --output "$TARBALL"
+          echo "TARBALL=$TARBALL" >> "$GITHUB_ENV"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create md5sum
+        run: md5sum "$TARBALL" > "${TARBALL}.md5"
+
+      - name: Upload to Cloudflare R2
+        run: |
+          aws s3 cp "$TARBALL" "s3://lindera/$TARBALL"
+          aws s3 cp "${TARBALL}.md5" "s3://lindera/${TARBALL}.md5"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_ENDPOINT_URL: ${{ secrets.R2_ENDPOINT }}

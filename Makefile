@@ -1,4 +1,4 @@
-VERSION := $(shell cat VERSION)-$(shell date +%Y%m%d)
+VERSION := $(shell cat VERSION)
 EXPERIMENT ?= baseline
 LAMBDA ?= 0.01
 MAX_ITER ?= 100
