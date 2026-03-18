@@ -58,7 +58,7 @@ REWRITE_DEF="${TRAIN}/rewrite.def"
 MODEL="${TRAIN}/model.dat"
 EXPORT_DIR="${EXP_DIR}/export"
 DICT_DIR="${EXP_DIR}/dict"
-METADATA="${WORK}/build/metadata.json"
+METADATA="${ROOT}/metadata.json"
 TEST_FILE="${WORK}/ud-chinese/UD_Chinese-GSD/zh_gsd-ud-test.conllu"
 JIEBA_DICT="${WORK}/dict.txt.big"
 
