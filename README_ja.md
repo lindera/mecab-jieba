@@ -89,9 +89,9 @@ bash scripts/run_experiment.sh baseline
 | 変数 | デフォルト | 説明 |
 | ---- | ---------- | ---- |
 | `CORPUS` | `work/train/corpus.txt` | 学習コーパスのパス |
-| `FEATURE_DEF` | `work/train/feature.def` | 素性テンプレートファイル |
-| `CHAR_DEF` | `work/train/char.def` | 文字種定義ファイル |
-| `UNK_DEF` | `work/train/unk.def` | 未知語定義ファイル |
+| `FEATURE_DEF` | `feature.def` | 素性テンプレートファイル |
+| `CHAR_DEF` | `char.def` | 文字種定義ファイル |
+| `UNK_DEF` | `unk.def` | 未知語定義ファイル |
 | `LAMBDA` | `0.01` | 正則化係数 |
 | `MAX_ITER` | `100` | 最大学習イテレーション数 |
 | `REGULARIZATION` | `l2` | `l1`、`l2`、または `elasticnet` |
@@ -105,7 +105,7 @@ LAMBDA=0.01 MAX_ITER=100 REGULARIZATION=l2 bash scripts/run_experiment.sh baseli
 
 ### 素性テンプレート
 
-素性テンプレートは `work/train/feature.def` で定義します。デフォルト（最良既知）の設定:
+素性テンプレートは `feature.def` で定義します。デフォルト（最良既知）の設定:
 
 ```text
 UNIGRAM:%F[0]          # 品詞タグ（PKU タグセット）
@@ -143,7 +143,7 @@ UD Chinese GSD テストセット（481 文）での評価結果:
 | `%F[0]` + B00 | L2, λ=0.01 | 0.7803 | 0.7464 | 0.7630 |
 | **`%F[0]` + `%t` + `%F[6-9]` + B00** | **L2, λ=0.01** | **0.7822** | **0.7644** | **0.7732** |
 
-デフォルトの `work/train/feature.def` と `REGULARIZATION=l2` で最良結果を再現できます。
+デフォルトの `feature.def` と `REGULARIZATION=l2` で最良結果を再現できます。
 
 ## MeCab CSV フォーマット
 

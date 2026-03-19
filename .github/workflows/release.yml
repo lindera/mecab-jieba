@@ -45,7 +45,13 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create md5sum
-        run: md5sum "$TARBALL" | awk '{print $1}' > "${TARBALL}.md5"
+        run: |
+          MD5=$(md5sum "$TARBALL" | awk '{print $1}')
+          echo "$MD5" > "${TARBALL}.md5"
+          echo "### MD5 Checksum" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          echo "$MD5  $TARBALL" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload to Cloudflare R2
         run: |

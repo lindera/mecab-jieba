@@ -95,9 +95,9 @@ The dictionary source files in `export/` (`lex.csv`, `matrix.def`, etc.) are the
 | Variable | Default | Description |
 | -------- | ------- | ----------- |
 | `CORPUS` | `work/train/corpus.txt` | Training corpus path |
-| `FEATURE_DEF` | `work/train/feature.def` | Feature template file |
-| `CHAR_DEF` | `work/train/char.def` | Character category definitions |
-| `UNK_DEF` | `work/train/unk.def` | Unknown word definitions |
+| `FEATURE_DEF` | `feature.def` | Feature template file |
+| `CHAR_DEF` | `char.def` | Character category definitions |
+| `UNK_DEF` | `unk.def` | Unknown word definitions |
 | `LAMBDA` | `0.01` | Regularization coefficient |
 | `MAX_ITER` | `100` | Maximum training iterations |
 | `REGULARIZATION` | `l2` | `l1`, `l2`, or `elasticnet` |
@@ -111,7 +111,7 @@ LAMBDA=0.01 MAX_ITER=100 REGULARIZATION=l2 bash scripts/run_experiment.sh baseli
 
 ### Feature templates
 
-Feature templates are defined in `work/train/feature.def`.
+Feature templates are defined in `feature.def`.
 The default (best known) configuration:
 
 ```text
@@ -152,7 +152,7 @@ Evaluated on UD Chinese GSD test set (481 sentences):
 | `%F[0]` + B00 | L2, λ=0.01 | 0.7803 | 0.7464 | 0.7630 |
 | **`%F[0]` + `%t` + `%F[6-9]` + B00** | **L2, λ=0.01** | **0.7822** | **0.7644** | **0.7732** |
 
-The default `work/train/feature.def` and `REGULARIZATION=l2` reproduce
+The default `feature.def` and `REGULARIZATION=l2` reproduce
 the best result.
 
 ## MeCab CSV Format
