@@ -1,7 +1,7 @@
 0 BOS/EOS
 1 n,NUMERIC,*,*,*,*,3,1,店,low
 2 nz,ALPHA,*,*,*,*,4+,A,T,low
-3 m,CHINESE,yi1,一,一,"one/1/single/a (article)/as soon as/entire/whole/all/throughout/""one"" radical in Chinese characters (Kangxi radical 1)/also pr. [yao1] for greater clarity when spelling out numbers digit by digit",1,一,一,high
+3 m,CHINESE,yi1,一,一,"one/single/a (article)/as soon as/entire; whole; all; throughout/""one"" radical in Chinese characters (Kangxi radical 1)/also pr. [yao1] for greater clarity when spelling out numbers digit by digit",1,一,一,high
 4 x,CHINESE,ji1,乩,乩,to divine,1,乩,乩,mid
 5 w,*,*,*,*
 6 UNK_11

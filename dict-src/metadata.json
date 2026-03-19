@@ -1,16 +1,25 @@
 {
   "compress_algorithm": "deflate",
   "default_field_value": "*",
-  "default_left_context_id": 1,
-  "default_right_context_id": 1,
-  "default_word_cost": 1619,
+  "default_left_context_id": 0,
+  "default_right_context_id": 0,
+  "default_word_cost": 1625,
   "dictionary_schema": {
     "fields": [
       "surface",
       "left_context_id",
       "right_context_id",
       "cost",
-      "pos"
+      "part_of_speech",
+      "chartype",
+      "pinyin",
+      "traditional",
+      "simplified",
+      "definition",
+      "char_count",
+      "first_char",
+      "last_char",
+      "freq_band"
     ]
   },
   "encoding": "UTF-8",
@@ -21,18 +30,19 @@
     "label_count": 584440,
     "max_left_context_id": 5,
     "max_right_context_id": 6,
-    "regularization": 0.02,
+    "regularization": 0.01,
     "training_iterations": 100,
-    "updated_at": 1773737582,
+    "updated_at": 1773881523,
     "version": "1.0.0"
   },
   "name": "jieba",
-  "normalize_details": true,
-  "skip_invalid_cost_or_id": false,
+  "normalize_details": false,
+  "skip_invalid_cost_or_id": true,
   "user_dictionary_schema": {
     "fields": [
       "surface",
-      "pos"
+      "part_of_speech",
+      "pinyin"
     ]
   }
 }
