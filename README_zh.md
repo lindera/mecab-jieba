@@ -81,9 +81,9 @@ bash scripts/run_experiment.sh baseline
 | 变量 | 默认值 | 说明 |
 | ---- | ------ | ---- |
 | `CORPUS` | `work/train/corpus.txt` | 训练语料路径 |
-| `FEATURE_DEF` | `work/train/feature.def` | 特征模板文件 |
-| `CHAR_DEF` | `work/train/char.def` | 字符类别定义文件 |
-| `UNK_DEF` | `work/train/unk.def` | 未知词定义文件 |
+| `FEATURE_DEF` | `feature.def` | 特征模板文件 |
+| `CHAR_DEF` | `char.def` | 字符类别定义文件 |
+| `UNK_DEF` | `unk.def` | 未知词定义文件 |
 | `LAMBDA` | `0.01` | 正则化系数 |
 | `MAX_ITER` | `100` | 最大训练迭代次数 |
 | `REGULARIZATION` | `l2` | `l1`、`l2` 或 `elasticnet` |
@@ -97,7 +97,7 @@ LAMBDA=0.01 MAX_ITER=100 REGULARIZATION=l2 bash scripts/run_experiment.sh baseli
 
 ### 特征模板
 
-特征模板在 `work/train/feature.def` 中定义。默认（最优已知）配置：
+特征模板在 `feature.def` 中定义。默认（最优已知）配置：
 
 ```text
 UNIGRAM:%F[0]          # 词性标签（PKU 标签集）
@@ -135,7 +135,7 @@ BIGRAM B00:%L[0]/%R[0] # 词性间转移
 | `%F[0]` + B00 | L2, λ=0.01 | 0.7803 | 0.7464 | 0.7630 |
 | **`%F[0]` + `%t` + `%F[6-9]` + B00** | **L2, λ=0.01** | **0.7822** | **0.7644** | **0.7732** |
 
-使用默认的 `work/train/feature.def` 和 `REGULARIZATION=l2` 可复现最优结果。
+使用默认的 `feature.def` 和 `REGULARIZATION=l2` 可复现最优结果。
 
 ## MeCab CSV 格式
 

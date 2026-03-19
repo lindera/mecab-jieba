@@ -1,0 +1,3 @@
+# Rewrite rules for feature normalization
+# No rewrite rules needed for PKU/jieba tagset
+# The POS tags (n, v, a, etc.) are already in a suitable form for CRF training.

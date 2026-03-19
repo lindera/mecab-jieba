@@ -11,9 +11,9 @@
 #   bash scripts/run_experiment.sh <experiment_name>
 #
 # Environment variables (override defaults):
-#   FEATURE_DEF          - path to feature.def (default: work/train/feature.def)
-#   CHAR_DEF             - path to char.def (default: work/train/char.def)
-#   UNK_DEF              - path to unk.def (default: work/train/unk.def)
+#   FEATURE_DEF          - path to feature.def (default: feature.def)
+#   CHAR_DEF             - path to char.def (default: char.def)
+#   UNK_DEF              - path to unk.def (default: unk.def)
 #   CORPUS               - path to corpus.txt (default: work/train/corpus.txt)
 #   LAMBDA               - regularization coefficient (default: 0.01)
 #   MAX_ITER             - max training iterations (default: 100)
@@ -43,9 +43,9 @@ TRAIN="${WORK}/train"
 EXP_DIR="${WORK}/experiments/${EXPERIMENT_NAME}"
 
 # Defaults (overridable via env vars)
-FEATURE_DEF="${FEATURE_DEF:-${TRAIN}/feature.def}"
-CHAR_DEF="${CHAR_DEF:-${TRAIN}/char.def}"
-UNK_DEF="${UNK_DEF:-${TRAIN}/unk.def}"
+FEATURE_DEF="${FEATURE_DEF:-${ROOT}/feature.def}"
+CHAR_DEF="${CHAR_DEF:-${ROOT}/char.def}"
+UNK_DEF="${UNK_DEF:-${ROOT}/unk.def}"
 CORPUS="${CORPUS:-${TRAIN}/corpus.txt}"
 LAMBDA="${LAMBDA:-0.01}"
 MAX_ITER="${MAX_ITER:-100}"
@@ -54,7 +54,7 @@ ELASTIC_NET_L1_RATIO="${ELASTIC_NET_L1_RATIO:-0.5}"
 
 # Fixed paths
 SEED="${TRAIN}/seed.csv"
-REWRITE_DEF="${TRAIN}/rewrite.def"
+REWRITE_DEF="${REWRITE_DEF:-${ROOT}/rewrite.def}"
 MODEL="${TRAIN}/model.dat"
 EXPORT_DIR="${EXP_DIR}/export"
 DICT_DIR="${EXP_DIR}/dict"
