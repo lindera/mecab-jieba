@@ -3,7 +3,7 @@
   "default_field_value": "*",
   "default_left_context_id": 0,
   "default_right_context_id": 0,
-  "default_word_cost": 1625,
+  "default_word_cost": 3084,
   "dictionary_schema": {
     "fields": [
       "surface",
@@ -25,15 +25,14 @@
   "encoding": "UTF-8",
   "flexible_csv": true,
   "model_info": {
-    "connection_matrix_size": "7x7",
-    "feature_count": 584429,
-    "label_count": 584440,
-    "max_left_context_id": 5,
-    "max_right_context_id": 6,
+    "connection_matrix_size": "56x56",
+    "feature_count": 584430,
+    "label_count": 584441,
+    "max_left_context_id": 55,
+    "max_right_context_id": 55,
     "regularization": 0.01,
     "training_iterations": 100,
-    "updated_at": 1773881523,
-    "version": "1.0.0"
+    "version": "2.0.0"
   },
   "name": "jieba",
   "normalize_details": false,

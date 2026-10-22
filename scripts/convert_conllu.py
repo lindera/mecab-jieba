@@ -6,21 +6,30 @@ Usage:
         --input dir_or_file [dir_or_file ...] \\
         --output corpus.txt \\
         --jieba-dict /path/to/dict.txt.big \\
+        --seed work/train/seed.csv \\
         --split train
 
 The script reads CoNLL-U formatted files from Universal Dependencies (UD)
 Chinese treebanks and converts them into lindera training corpus format:
 
-    surface\\tpos,*,*,*,*
-    surface\\tpos,*,*,*,*
+    surface\\tfeature
+    surface\\tfeature
     EOS
 
 UPOS tags are mapped to PKU tagset.  For PROPN, the jieba dict.txt.big is
 consulted to distinguish nr (person name), ns (place name), nt (organization),
 and nz (other proper noun).
+
+`lindera train`, like MeCab's learner, makes a gold token a dictionary word
+only when a seed row has its surface and the same whole feature.  So a token
+whose surface has seed rows gets the feature of one of them (see
+`choose_seed_row`); any other token gets
+`pos,chartype,*,*,*,*,char_count,first_char,last_char,*` and is a virtual
+label in training.
 """
 
 import argparse
+import csv
 import os
 import sys
 from collections import Counter
@@ -232,6 +241,58 @@ def collect_conllu_files(
 
 
 # ---------------------------------------------------------------------------
+# Seed dictionary
+# ---------------------------------------------------------------------------
+
+
+def load_seed(path: str) -> dict[str, list[tuple[str, str]]]:
+    """Load seed.csv and return a mapping from surface to its rows.
+
+    Each row is ``(pos, feature)`` in seed order, where *feature* is the text
+    after the fourth field separator (``surface,0,0,0,``), quotes included:
+    the string that `lindera train` compares a gold token's feature with.
+    """
+    rows: dict[str, list[tuple[str, str]]] = {}
+    with open(path, encoding="utf-8", newline="") as f:
+        for line_number, line in enumerate(f, 1):
+            line = line.rstrip("\r\n")
+            if not line:
+                continue
+            fields = next(csv.reader([line]))
+            if len(fields) < 5:
+                raise ValueError(f"{path}:{line_number}: fewer than 5 fields")
+            prefix = ",".join(fields[:4]) + ","
+            if not line.startswith(prefix):
+                raise ValueError(
+                    f"{path}:{line_number}: the first four fields must not be quoted"
+                )
+            rows.setdefault(fields[0], []).append((fields[4], line[len(prefix):]))
+    return rows
+
+
+def choose_seed_row(rows: list[tuple[str, str]], gold_pos: str) -> tuple[str, str]:
+    """Choose the seed row whose feature a gold token gets.
+
+    The first row with the gold POS; else the first row whose POS starts with
+    the same letter, since jieba's tags refine the PKU tags this script maps
+    UPOS to (``uj`` for ``u``, ``vn`` for ``v``, ``nrt`` for ``n``); else the
+    first row of the surface.  The runtime's candidates are seed rows and
+    unknown words only, so a token kept as a virtual label would make the
+    seed row of the same word a negative candidate at its position.
+
+    Returns ``(kind, feature)``, where *kind* is ``same POS``,
+    ``same first letter`` or ``other POS``.
+    """
+    for pos, feature in rows:
+        if pos == gold_pos:
+            return "same POS", feature
+    for pos, feature in rows:
+        if pos[:1] == gold_pos[:1]:
+            return "same first letter", feature
+    return "other POS", rows[0][1]
+
+
+# ---------------------------------------------------------------------------
 # Writer
 # ---------------------------------------------------------------------------
 
@@ -245,12 +306,27 @@ def get_char_count_label(surface: str) -> str:
 
 
 def write_corpus(
-    sentences: list[list[tuple[str, str, str]]], output: str
-) -> None:
-    """Write sentences in lindera training corpus format."""
+    sentences: list[list[tuple[str, str, str]]],
+    output: str,
+    seed: dict[str, list[tuple[str, str]]],
+) -> Counter:
+    """Write sentences in lindera training corpus format.
+
+    A token whose surface has seed rows gets the feature of one of them
+    (`choose_seed_row`).  Returns the number of tokens of each kind:
+    ``same POS``, ``same first letter``, ``other POS`` and ``not in seed``.
+    """
+    alignment: Counter = Counter()
     with open(output, "w", encoding="utf-8") as f:
         for sent in sentences:
             for surface, pos, char_type in sent:
+                rows = seed.get(surface)
+                if rows:
+                    kind, feature = choose_seed_row(rows, pos)
+                    alignment[kind] += 1
+                    f.write(f"{surface}\t{feature}\n")
+                    continue
+                alignment["not in seed"] += 1
                 char_count = get_char_count_label(surface)
                 first_char = surface[0] if surface else "*"
                 last_char = surface[-1] if surface else "*"
@@ -258,6 +334,7 @@ def write_corpus(
                 # F[7]=first_char, F[8]=last_char, F[9]=freq_band(*)
                 f.write(f"{surface}\t{pos},{char_type},*,*,*,*,{char_count},{first_char},{last_char},*\n")
             f.write("EOS\n")
+    return alignment
 
 
 # ---------------------------------------------------------------------------
@@ -270,6 +347,7 @@ def print_statistics(
     total_tokens: int,
     upos_counter: Counter,
     propn_stats: Counter,
+    alignment: Counter,
 ) -> None:
     """Print conversion statistics to stdout."""
     print(f"\n{'='*60}")
@@ -290,6 +368,12 @@ def print_statistics(
         for tag, count in propn_stats.most_common():
             pct = count * 100 / propn_total if propn_total else 0
             print(f"    {tag:6s}  {count:>8d}  ({pct:5.1f}%)")
+
+    print(f"\n  Feature from a seed row (see choose_seed_row):")
+    for kind in ("same POS", "same first letter", "other POS", "not in seed"):
+        count = alignment[kind]
+        pct = count * 100 / total_tokens if total_tokens else 0
+        print(f"    {kind:18s}  {count:>8d}  ({pct:5.1f}%)")
 
     print(f"{'='*60}")
 
@@ -323,6 +407,12 @@ def main() -> None:
         help="Path to jieba dict.txt.big for PROPN resolution",
     )
     parser.add_argument(
+        "--seed",
+        required=True,
+        metavar="FILE",
+        help="Path to the seed dictionary (seed.csv from build_seed.py) whose features gold tokens get",
+    )
+    parser.add_argument(
         "--split",
         default=None,
         choices=["train", "dev", "test"],
@@ -333,6 +423,9 @@ def main() -> None:
     # Validate jieba dict
     if not os.path.isfile(args.jieba_dict):
         print(f"Error: jieba dict not found: {args.jieba_dict}", file=sys.stderr)
+        sys.exit(1)
+    if not os.path.isfile(args.seed):
+        print(f"Error: seed dictionary not found: {args.seed}", file=sys.stderr)
         sys.exit(1)
 
     # Collect input files
@@ -349,6 +442,11 @@ def main() -> None:
     print(f"\nLoading jieba dict: {args.jieba_dict} ...")
     jieba_pos = load_jieba_dict(args.jieba_dict)
     print(f"  Loaded {len(jieba_pos)} entries with POS tags")
+
+    # Load the seed dictionary whose features gold tokens get
+    print(f"Loading seed dictionary: {args.seed} ...")
+    seed = load_seed(args.seed)
+    print(f"  Loaded {sum(len(r) for r in seed.values())} rows of {len(seed)} surfaces")
 
     # Parse all files
     upos_counter: Counter = Counter()
@@ -368,11 +466,11 @@ def main() -> None:
         sys.exit(1)
 
     # Write output
-    write_corpus(all_sentences, args.output)
+    alignment = write_corpus(all_sentences, args.output, seed)
     print(f"\nWrote {total_sentences} sentences ({total_tokens} tokens) to {args.output}")
 
     # Print statistics
-    print_statistics(total_sentences, total_tokens, upos_counter, propn_stats)
+    print_statistics(total_sentences, total_tokens, upos_counter, propn_stats, alignment)
     print("Done.")
 
 
