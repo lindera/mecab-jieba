@@ -139,6 +139,9 @@ CYRILLIC        1 1 0
 0xFE30..0xFE4F SYMBOL
 0xFE50..0xFE6B SYMBOL
 
-0x3007 SYMBOL CHINESENUMERIC
+# 〇 (IDEOGRAPHIC NUMBER ZERO) is a numeral, like the CHINESE-NUMERIC lines.
+# It comes last because 0x3000..0x303F SYMBOL covers it too, and the last
+# line that covers a code point decides its categories.
+0x3007 CHINESENUMERIC CHINESE
 
 # END OF TABLE
