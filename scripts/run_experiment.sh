@@ -2,10 +2,13 @@
 # Run the full training pipeline: train -> export -> build -> evaluate
 #
 # Prerequisites:
-#   - lindera CLI (cargo install --path lindera-cli --features train)
+#   - lindera CLI with the `train` feature, from lindera/lindera 150db680 or
+#     later (cargo install --path lindera-cli --features train): earlier
+#     versions train without dictionary-word candidates (lindera#1164) and
+#     export 32767 for a connection without a weight (lindera#1168)
 #   - Python 3.10+ with no extra packages
-#   - UD Chinese GSD test data at .tmp/ud-chinese/UD_Chinese-GSD/
-#   - Training data prepared in work/train/ (see README.md)
+#   - UD Chinese GSD and GSDSimp at work/ud-chinese/ (make prepare)
+#   - Training data prepared in work/train/ (make prepare; see README.md)
 #
 # Usage:
 #   bash scripts/run_experiment.sh <experiment_name>
@@ -21,7 +24,7 @@
 #   ELASTIC_NET_L1_RATIO - L1 ratio for elastic net (default: 0.5, range: 0.0-1.0)
 #
 # Examples:
-#   # Best known configuration (L2, F1=0.7732 on UD Chinese GSD)
+#   # Best known configuration (the defaults; its F1 is in README.md)
 #   bash scripts/run_experiment.sh baseline
 #
 #   # Elastic Net with custom L1 ratio
@@ -59,12 +62,16 @@ MODEL="${TRAIN}/model.dat"
 EXPORT_DIR="${EXP_DIR}/export"
 DICT_DIR="${EXP_DIR}/dict"
 METADATA="${ROOT}/metadata.json"
-TEST_FILE="${WORK}/ud-chinese/UD_Chinese-GSD/zh_gsd-ud-test.conllu"
+TEST_FILES=(
+  "${WORK}/ud-chinese/UD_Chinese-GSD/zh_gsd-ud-test.conllu"
+  "${WORK}/ud-chinese/UD_Chinese-GSDSimp/zh_gsdsimp-ud-test.conllu"
+)
 JIEBA_DICT="${WORK}/dict.txt.big"
 
 echo "============================================================"
 echo "Experiment: ${EXPERIMENT_NAME}"
 echo "============================================================"
+echo "  LINDERA     : $(command -v lindera) ($(lindera --version))"
 echo "  FEATURE_DEF : ${FEATURE_DEF}"
 echo "  CHAR_DEF    : ${CHAR_DEF}"
 echo "  UNK_DEF     : ${UNK_DEF}"
@@ -127,11 +134,15 @@ lindera build \
 # Step 4: Evaluate
 echo ""
 echo "[4/4] Evaluating..."
-python3 "${ROOT}/scripts/evaluate.py" \
-  --test-file "${TEST_FILE}" \
-  --dict-dir "${DICT_DIR}" \
-  --jieba-dict "${JIEBA_DICT}" \
-  2>&1 | tee "${EXP_DIR}/result.txt"
+: > "${EXP_DIR}/result.txt"
+for TEST_FILE in "${TEST_FILES[@]}"; do
+  echo "== ${TEST_FILE}" | tee -a "${EXP_DIR}/result.txt"
+  python3 "${ROOT}/scripts/evaluate.py" \
+    --test-file "${TEST_FILE}" \
+    --dict-dir "${DICT_DIR}" \
+    --jieba-dict "${JIEBA_DICT}" \
+    2>&1 | tee -a "${EXP_DIR}/result.txt"
+done
 
 echo ""
 echo "Results saved to: ${EXP_DIR}/result.txt"

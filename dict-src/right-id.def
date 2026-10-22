@@ -1,7 +1,56 @@
 0 BOS/EOS
 1 n,NUMERIC,*,*,*,*,3,1,店,low
 2 nz,ALPHA,*,*,*,*,4+,A,T,low
-3 m,CHINESE,yi1,一,一,"one/single/a (article)/as soon as/entire; whole; all; throughout/""one"" radical in Chinese characters (Kangxi radical 1)/also pr. [yao1] for greater clarity when spelling out numbers digit by digit",1,一,一,high
-4 x,CHINESE,ji1,乩,乩,to divine,1,乩,乩,mid
-5 w,*,*,*,*
-6 UNK_11
+3 zg,CHINESE,ba1,䰾,鲃,used in 䰾魚|鲃鱼[ba1 yu2],1,䰾,䰾,low
+4 m,CHINESE,yi1,一,一,"one/single/a (article)/as soon as/entire; whole; all; throughout/""one"" radical in Chinese characters (Kangxi radical 1)/also pr. [yao1] for greater clarity when spelling out numbers digit by digit",1,一,一,high
+5 i,CHINESE,*,*,*,*,4+,一,举,mid
+6 l,CHINESE,yi1 yi1 dui4 ying4,一一對應,一一对应,one-to-one correspondence,4+,一,应,mid
+7 d,CHINESE,*,*,*,*,2,一,丁,mid
+8 s,CHINESE,*,*,*,*,2,一,上,low
+9 t,CHINESE,*,*,*,*,3,一,午,mid
+10 mq,CHINESE,*,*,*,*,3,一,丝,mid
+11 nr,CHINESE,*,*,*,*,4+,一,挨,low
+12 j,CHINESE,*,*,*,*,4+,一,会,mid
+13 a,CHINESE,*,*,*,*,2,一,乐,low
+14 r,CHINESE,*,*,*,*,3,一,人,low
+15 b,CHINESE,*,*,*,*,2,一,传,mid
+16 f,CHINESE,*,*,*,*,2,一,侧,mid
+17 nrt,CHINESE,*,*,*,*,2,一,俟,low
+18 v,CHINESE,*,*,*,*,3,一,斩,low
+19 z,CHINESE,*,*,*,*,4+,一,空,low
+20 ns,CHINESE,*,*,*,*,3,一,仑,low
+21 q,CHINESE,*,*,*,*,4+,一,金,low
+22 vn,CHINESE,*,*,*,*,3,一,人,low
+23 c,CHINESE,yi1 ru2,一如,一如,to be just like,2,一,如,mid
+24 nt,CHINESE,*,*,*,*,4+,一,众,rare
+25 u,CHINESE,yi1 yan2,一言,一言,one sentence/brief remark,2,一,言,low
+26 o,CHINESE,*,*,*,*,4+,丁,冬,low
+27 nrfg,CHINESE,*,*,*,*,3,万,雯,low
+28 df,CHINESE,bu4 yao4,不要,不要,don't!; must not,2,不,要,high
+29 p,CHINESE,yu2,與,与,"variant of 歟|欤[yu2] / (formal) and; together with (linking parallel nouns, verbs, or phrases)/(formal) with; from (marking the other participant in an interaction, comparison, or contrast, e.g. 與他握手|与他握手[yu3 ta1 wo4 shou3] ""shake hands with him"", 與去年不同|与去年不同[yu3 qu4 nian2 bu4 tong2] ""different from last year"")/(literary) to give; to grant; to bestow / to take part in",1,与,与,high
+30 g,CHINESE,gai4,丐,丐,to beg for alms/beggar / variant of 丐[gai4] / variant of 丐[gai4],1,丐,丐,high
+31 y,CHINESE,*,*,*,*,2,丟,了,low
+32 ad,CHINESE,yan2 li4,嚴厲,严厉,severe/strict,2,严,厉,high
+33 vg,CHINESE,sang1,喪,丧,"mourning/funeral/(old) corpse / to lose sth abstract but important (courage, authority, one's life etc)/to be bereaved of (one's spouse etc)/to die/disappointed/discouraged",1,丧,丧,high
+34 ng,CHINESE,Yi4,義,义,"surname Yi/(Tw) Italy (abbr. for 義大利|义大利[Yi4 da4 li4]) / justice/righteousness/meaning/foster (father etc)/adopted/artificial (tooth, limb etc)/relationship/friendship",1,义,义,high
+35 x,CHINESE,ji1,乩,乩,to divine,1,乩,乩,mid
+36 ul,CHINESE,le5,了,了,"(completed action marker)/(modal particle indicating change of state, situation now)/(modal particle intensifying preceding clause) / to finish/(used with 得[de2] or 不[bu4] after a verb to express (im)possibility, as in 忘不了[wang4 bu5 liao3] ""cannot forget"")/(literary) (usually followed by a negative such as 無|无[wu2] or 不[bu4]) completely (not); entirely (not); (not) in the least/to understand clearly (variant of 瞭|了[liao3]) / (of eyes) bright/clear-sighted/to understand clearly / unofficial variant of 瞭[liao4]",1,了,了,high
+37 k,CHINESE,men5,們,们,"plural marker for pronouns, and nouns referring to individuals",1,们,们,high
+38 ag,CHINESE,jian3,儉,俭,(bound form) frugal; thrifty,1,俭,俭,mid
+39 dg,CHINESE,ju4,俱,俱,(literary) all; both; entirely; without exception/(literary) to be together/(literary) to be alike,1,俱,俱,high
+40 rr,CHINESE,*,*,*,*,2,偺,们,low
+41 an,CHINESE,xiong1 xian3,兇險,凶险,dangerous/ruthless/treacherous,2,兇,險,mid
+42 rg,CHINESE,ci2,茲,兹,used in 龜茲|龟兹[Qiu1 ci2] / (literary) this/(literary) now/(literary) year,1,兹,兹,mid
+43 vq,CHINESE,*,*,*,*,2,去,浄,low
+44 e,CHINESE,dai1,呔,呔,(interjection) hey!/Taiwan pr. [tai5] / (dialect) non-local in one's speaking accent,1,呔,呔,mid
+45 uv,CHINESE,de5,地,地,"-ly/structural particle: used before a verb or adjective, linking it to preceding modifying adverbial adjunct / earth/ground/field/place/land/CL:片[pian4]",1,地,地,high
+46 tg,CHINESE,xi1,夕,夕,(bound form) sunset; dusk/(bound form) evening; night/Taiwan pr. [xi4],1,夕,夕,mid
+47 mg,CHINESE,yin2,寅,寅,"3rd earthly branch: 3-5 a.m., 1st solar month (4th February-5th March), year of the Tiger/ancient Chinese compass point: 60°",1,寅,寅,mid
+48 ud,CHINESE,de2,得,得,"to obtain/to get/to gain/to catch (a disease)/proper/suitable/proud/contented/to allow/to permit/ready/finished / used in 得瑟[de4 se5] / structural particle: used after a verb (or adjective as main verb), linking it to following phrase indicating effect, degree, possibility etc / to have to/must/ought to/to need to",1,得,得,high
+49 vd,CHINESE,chi2 xu4,持續,持续,to continue/to persist/to last/sustainable/preservation,2,持,續,high
+50 uj,CHINESE,de5,的,的,"of; ~'s (possessive particle)/(used after an attribute when it modifies a noun)/(used at the end of a declarative sentence for emphasis)/(used after a noun, verb or adjective to form a nominal expression, as in 皮革的[pi2 ge2 de5] ""one made of leather"" or 跑堂兒的|跑堂儿的[pao3 tang2 r5 de5] ""a waiter (literally, one who runs back and forth in a restaurant)"" or 新的[xin1 de5] ""new one"")/also pr. [di4] or [di5] in poetry and songs / a taxi; a cab (abbr. for 的士[di1 shi4]) / really and truly / (bound form) bull's-eye; target",1,的,的,high
+51 uz,CHINESE,zhao1,着,着,variant of 著|着[zhao1] / variant of 著|着[zhao2] / variant of 著|着[zhe5] / variant of 著|着[zhuo2] / a move in chess (Taiwan pr. [zhuo2])/trick; tactic/(dialect) okay; all right/(dialect) to put in; to add / to touch/to come in contact with/to feel/to be affected by/to catch fire/to burn/(coll.) to fall asleep/(after a verb) hitting the mark/succeeding in / aspect particle indicating action in progress or ongoing state / to wear (clothes)/to contact/to use/to apply,1,着,着,high
+52 h,CHINESE,*,*,*,*,2,超,低,mid
+53 ug,CHINESE,Guo1,過,过,surname Guo / to cross/to go over/to pass (time)/to celebrate (a holiday)/to live/to get along/excessively/too- / (experienced action marker),1,过,过,high
+54 rz,CHINESE,zhe4 wei4,這位,这位,this (person),2,这,位,high
+55 w,*,*,*,*
