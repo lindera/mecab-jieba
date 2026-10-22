@@ -10,6 +10,9 @@ GitHub, merges them, and converts each entry to MeCab CSV format:
     surface,left_id,right_id,cost,pos,pinyin,traditional,simplified,definition
 
 Cost is computed as: int(-log10(freq / total_freq) * 100)
+
+Words that jieba's dictionary lacks (SUPPLEMENTARY_ENTRIES) are added after
+the other entries, with the frequency and POS of a jieba entry.
 """
 
 import argparse
@@ -26,6 +29,12 @@ CEDICT_URL = (
     "https://www.mdbg.net/chinese/export/cedict/cedict_1_0_ts_utf-8_mdbg.txt.gz"
 )
 OUTPUT_FILE = "jieba.csv"
+
+# Words that jieba's dictionary lacks, each mapped to the jieba entry whose
+# frequency and POS it takes. `〇` (U+3007 IDEOGRAPHIC NUMBER ZERO) is a
+# numeral like `零`; without an entry, it is an unknown word that can swallow
+# the characters after it (https://github.com/lindera/lindera/issues/1162).
+SUPPLEMENTARY_ENTRIES = {"〇": "零"}
 
 
 def download(url: str, dest: str) -> None:
@@ -109,6 +118,26 @@ def compute_cost(freq: int, total_freq: int) -> int:
     return int(-math.log10(freq / total_freq) * 100)
 
 
+def supplementary_entries(
+    entries: list[tuple[str, int, str]],
+) -> list[tuple[str, int, str]]:
+    """Return the SUPPLEMENTARY_ENTRIES that *entries* lack, as (surface, freq, pos).
+
+    Each takes the frequency and POS of the first entry of its model word.
+    A word whose model is missing is skipped.
+    """
+    surfaces = {surface for surface, _, _ in entries}
+    models: dict[str, tuple[int, str]] = {}
+    for surface, freq, pos in entries:
+        models.setdefault(surface, (freq, pos))
+    extra: list[tuple[str, int, str]] = []
+    for surface, model in SUPPLEMENTARY_ENTRIES.items():
+        if surface not in surfaces and model in models:
+            freq, pos = models[model]
+            extra.append((surface, freq, pos))
+    return extra
+
+
 def escape_csv_field(value: str) -> str:
     """Escape a CSV field value if it contains commas or quotes."""
     if "," in value or '"' in value:
@@ -120,16 +149,25 @@ def convert_to_csv(
     entries: list[tuple[str, int, str]],
     cedict: dict[str, tuple[str, str, str, str]],
     output: str,
+    extra: list[tuple[str, int, str]] | None = None,
 ) -> None:
-    """Convert parsed entries to MeCab CSV and write to *output*."""
+    """Convert parsed entries to MeCab CSV and write to *output*.
+
+    The *extra* entries (see supplementary_entries) are written after
+    *entries*. The total frequency is that of *entries* alone, so the extra
+    entries do not change the cost of any other entry.
+    """
+    extra = extra or []
     total_freq = sum(freq for _, freq, _ in entries)
     matched = 0
 
     print(f"Total jieba entries: {len(entries)}, total frequency: {total_freq}")
+    print(f"Supplementary entries: {len(extra)}")
     print(f"CC-CEDICT entries loaded: {len(cedict)}")
 
+    rows = entries + extra
     with open(output, "w", encoding="utf-8") as f:
-        for surface, freq, pos in entries:
+        for surface, freq, pos in rows:
             cost = compute_cost(freq, total_freq)
             cedict_entry = cedict.get(surface)
             if cedict_entry:
@@ -146,10 +184,10 @@ def convert_to_csv(
                 f"{surface},0,0,{cost},{pos},{pinyin},{traditional},{simplified},{definition}\n"
             )
 
-    print(f"Wrote {len(entries)} entries to {output}")
+    print(f"Wrote {len(rows)} entries to {output}")
     print(
-        f"CC-CEDICT matched: {matched}/{len(entries)} "
-        f"({matched * 100 // len(entries)}%)"
+        f"CC-CEDICT matched: {matched}/{len(rows)} "
+        f"({matched * 100 // len(rows)}%)"
     )
 
 
@@ -220,7 +258,7 @@ def main() -> None:
     cedict = parse_cedict(cedict_path)
 
     # Convert
-    convert_to_csv(entries, cedict, output_path)
+    convert_to_csv(entries, cedict, output_path, supplementary_entries(entries))
     print("Done.")
 
 

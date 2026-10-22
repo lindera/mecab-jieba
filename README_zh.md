@@ -40,8 +40,10 @@ python3 scripts/build_jieba_csv.py
 
 1. 将 jieba 的 `dict.txt.big`（表层形式、词频、词性）和 CC-CEDICT（拼音、繁体/简体、英文释义）下载到 `work/`。
 2. 根据 `int(-log10(freq / total_freq) * 100)` 计算词代价。
-3. 使用 CC-CEDICT 数据扩充各条目（覆盖率约 22%）。
-4. 以 MeCab CSV 格式输出 `jieba.csv`（584K 条目，约 25MB）。
+3. 在末尾补充 `dict.txt.big` 中缺少的 `〇`（U+3007），使用与 `零` 相同的词频和词性。
+   `total_freq` 仍为 `dict.txt.big` 的值，因此其他代价不变。
+4. 使用 CC-CEDICT 数据扩充各条目（覆盖率约 22%）。
+5. 以 MeCab CSV 格式输出 `jieba.csv`（584K 条目，约 25MB）。
 
 ## CRF 训练（可选）
 

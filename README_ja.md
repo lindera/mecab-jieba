@@ -41,8 +41,10 @@ python3 scripts/build_jieba_csv.py
 
 1. jieba の `dict.txt.big`（表層形・頻度・品詞）と CC-CEDICT（ピンイン・繁体字/簡体字・英語定義）を `work/` にダウンロード。
 2. 単語コストを `int(-log10(freq / total_freq) * 100)` で算出。
-3. CC-CEDICT データで各エントリを拡充（カバレッジ約 22%）。
-4. `jieba.csv`（584K エントリ、約 25MB）を MeCab CSV 形式で出力。
+3. `dict.txt.big` にない `〇`（U+3007）を、`零` と同じ頻度・品詞で末尾に追加。
+   `total_freq` は `dict.txt.big` のままなので、ほかのコストは変わらない。
+4. CC-CEDICT データで各エントリを拡充（カバレッジ約 22%）。
+5. `jieba.csv`（584K エントリ、約 25MB）を MeCab CSV 形式で出力。
 
 ## CRF 学習（オプション）
 

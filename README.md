@@ -48,8 +48,11 @@ python3 scripts/build_jieba_csv.py
    CC-CEDICT (pinyin, traditional/simplified forms, English definitions)
    into `work/`.
 2. Computes word cost as `int(-log10(freq / total_freq) * 100)`.
-3. Enriches each entry with CC-CEDICT data where available (~22% coverage).
-4. Outputs `jieba.csv` (584K entries, ~25MB) in MeCab CSV format.
+3. Adds `〇` (U+3007), which `dict.txt.big` lacks, after the other entries,
+   with the frequency and POS of `零`. `total_freq` stays that of
+   `dict.txt.big`, so no other cost changes.
+4. Enriches each entry with CC-CEDICT data where available (~22% coverage).
+5. Outputs `jieba.csv` (584K entries, ~25MB) in MeCab CSV format.
 
 ## CRF Training (Optional)
 
